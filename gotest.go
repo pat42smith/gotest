@@ -58,12 +58,12 @@ func NilError(t Reporter, e error) {
 	}
 }
 
-// Panics runs f and reports whether it panics.
+// Function panics runs f and reports whether it panics.
 //
-// If f panics, Panics returns true and the value passed to panic.
-// Otherwise, Panics returns (false, nil).
-// If f calls panic(nil), Panics will correctly return (true, nil).
-func Panics(f func()) (panicked bool, with any) {
+// If f panics, panics returns true and the value passed to panic.
+// Otherwise, panics returns (false, nil).
+// If f calls panic(nil), panics will correctly return (true, nil).
+func panics(f func()) (panicked bool, with any) {
 	defer func() {
 		if panicked {
 			with = recover()
@@ -80,7 +80,7 @@ func Panics(f func()) (panicked bool, with any) {
 // If f does panic, MustPanic returns the value that was passed to panic.
 func MustPanic(t Reporter, f func()) any {
 	t.Helper()
-	panicked, with := Panics(f)
+	panicked, with := panics(f)
 	if !panicked {
 		t.Fatal("Expected panic did not occur")
 	}

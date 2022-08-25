@@ -74,12 +74,12 @@ replace github.com/pat42smith/gotest => ` + here + "\n"
 	Require(t, bytes.Contains(out, need))
 }
 
-func TestPanics(t *testing.T) {
-	p, w := Panics(func() {})
+func Testpanics(t *testing.T) {
+	p, w := panics(func() {})
 	Expect(t, false, p)
 	Require(t, w == nil) // Can't use Expect(t, nil, w) because w (type any) does not implement comparable.
 
-	p, w = Panics(func() {
+	p, w = panics(func() {
 		panic(97)
 	})
 	Expect(t, true, p)
@@ -87,7 +87,7 @@ func TestPanics(t *testing.T) {
 
 	// panic(nil) is a special case that appears to the recover function as if no panic happened.
 	// So be sure to check this case.
-	p, w = Panics(func() {
+	p, w = panics(func() {
 		panic(nil)
 	})
 	Expect(t, true, p)

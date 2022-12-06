@@ -62,9 +62,7 @@ replace github.com/pat42smith/gotest => ` + here + "\n"
 	modfile := filepath.Join(tmp, "go.mod")
 	NilError(t, os.WriteFile(modfile, []byte(gomod), 0444))
 
-	gocmd, e := exec.LookPath("go")
-	NilError(t, e)
-	cmd := exec.Command(gocmd, "test")
+	cmd := exec.Command("go", "test")
 	cmd.Dir = tmp
 	out, e := cmd.CombinedOutput()
 	if e == nil {

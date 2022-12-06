@@ -13,6 +13,10 @@
 // be changed with the ErrorsNotFatal wrapper.
 package gotest
 
+import (
+	"os/exec"
+)
+
 // Type Reporter is an interface satisfied by the testing.T, .B, and .F types.
 //
 // Reporter includes the methods involved in reporting the status of test cases.
@@ -85,6 +89,33 @@ func MustPanic(t Reporter, f func()) any {
 		t.Fatal("Expected panic did not occur")
 	}
 	return with
+}
+
+// RunCommand runs an external command, expecting it to succeed with no output.
+//
+// If the command exits with any code other than 0, or if it produces any output
+// to either standard output or standard error, a suitable message will be reported
+// through t, and the test will be terminated with t.FailNow.
+func RunCommand(t Reporter, command string, args ...string) {
+	out, e := exec.Command(command, args...).CombinedOutput()
+
+	ok := true
+	if len(out) != 0 {
+		ok = false
+		t.Errorf("%s: unexpected output:", command)
+		if n := len(out); n < 500 {
+			t.Errorf("%s", out)
+		} else {
+			t.Errorf("%s ... %s", out[:150], out[n-150:])
+		}
+	}
+	if e != nil {
+		ok = false
+		t.Errorf("%s: %s", command, e)
+	}
+	if !ok {
+		t.FailNow()
+	}
 }
 
 // ErrorsNotFatal wraps a Reporter, and redirects fatal errors to non-terminating errors.

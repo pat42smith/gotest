@@ -107,3 +107,12 @@ func TestFatalf(t *testing.T) {
 	sr.Fatalf("boo")
 	sr.Expect(t, true, true, "boo\n", "")
 }
+
+func TestReset(t *testing.T) {
+	var sr StubReporter
+	sr.Expect(t, false, false, "", "")
+	sr.Fatal("boo")
+	sr.Expect(t, true, true, "boo\n", "")
+	sr.Reset()
+	sr.Expect(t, false, false, "", "")
+}

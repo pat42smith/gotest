@@ -125,3 +125,10 @@ func (sr *StubReporter) Expect(t Reporter, failed, killed bool, log, when string
 		t.Fatalf("%s StubReporter log is '%s'; expected '%s'", when, actual, log)
 	}
 }
+
+// Reset returns a StubReporter to the initial state.
+func (sr *StubReporter) Reset() {
+	sr.log.Reset()
+	sr.failed = false
+	sr.killed = false
+}

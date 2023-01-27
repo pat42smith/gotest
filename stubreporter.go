@@ -1,4 +1,4 @@
-// Copyright 2022 Patrick Smith
+// Copyright 2023 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 package gotest
@@ -50,6 +50,10 @@ func (sr *StubReporter) Killed() bool {
 }
 
 // Log formats its arguments as if by fmt.Println and records the resulting text.
+//
+// If the last argument is a string ending with a newline, Log still prints an
+// additional newline, creating a blank line in the output. This seems undesirable,
+// but it is what the testing package does, so we do the same.
 func (sr *StubReporter) Log(args ...any) {
 	_, e := fmt.Fprintln(&sr.log, args...)
 	if e != nil {

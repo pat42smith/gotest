@@ -1,15 +1,14 @@
-// Copyright 2022 Patrick Smith
+// Copyright 2023 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 package gotest
 
 import (
-	"bytes"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -62,14 +61,11 @@ replace github.com/pat42smith/gotest => ` + here + "\n"
 	modfile := filepath.Join(tmp, "go.mod")
 	NilError(t, os.WriteFile(modfile, []byte(gomod), 0444))
 
-	cmd := exec.Command("go", "test")
-	cmd.Dir = tmp
-	out, e := cmd.CombinedOutput()
-	if e == nil {
-		t.Fatal("Expected error from go test did not happen")
-	}
-	need := []byte(`default type string of "7" does not match inferred type int for T`)
-	Require(t, bytes.Contains(out, need))
+	cmd := Command("go", "test")
+	cmd.Chdir(tmp)
+	cmd.CheckStderr(func(actual string) bool {
+		return strings.Contains(actual, `default type string of "7" does not match inferred type int for T`)
+	})
 }
 
 func Testpanics(t *testing.T) {

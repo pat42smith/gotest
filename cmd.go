@@ -188,6 +188,12 @@ func (c *Cmd) Run(t Reporter, input string) {
 		} else {
 			t.Errorf("command: %s %s", c.name, strings.Join(c.args, " "))
 		}
+		if len(input) == 0 {
+			t.Error("no input")
+		} else {
+			// Not t.Error(...), in case the input ends with a newline.
+			t.Errorf("input:\n%s", input)
+		}
 		if out.Len() == 0 {
 			t.Error("no output")
 		} else {

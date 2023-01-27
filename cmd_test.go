@@ -22,6 +22,7 @@ func TestCmdDefaults(t *testing.T) {
 	Command("/bin/false").Run(&st, "")
 	st.Expect(t, true, true, `non-zero exit code
 command: /bin/false
+no input
 no output
 no error output
 exit code: 1
@@ -31,6 +32,7 @@ exit code: 1
 	Command("/bin/printf", "99").Run(&st, "")
 	st.Expect(t, true, true, `unexpected output
 command: /bin/printf 99
+no input
 output:
 99
 no error output
@@ -41,6 +43,7 @@ exit code: 0
 	Command("/bin/sh", "-c", "echo 87 >&2").Run(&st, "")
 	st.Expect(t, true, true, `unexpected error output
 command: /bin/sh -c echo 87 >&2
+no input
 no output
 error output:
 87
@@ -51,6 +54,7 @@ exit code: 0
 	Command("/bin/sh", "-c", "echo 87 >&2; exit 3").Run(&st, "")
 	st.Expect(t, true, true, `unexpected error output
 command: /bin/sh -c echo 87 >&2; exit 3
+no input
 no output
 error output:
 87
@@ -62,6 +66,7 @@ exit code: 3
 	st.Expect(t, true, true, `unexpected output
 unexpected error output
 command: /bin/sh -c echo 99; echo 87 >&2; exit 3
+no input
 output:
 99
 error output:
@@ -73,6 +78,7 @@ exit code: 3
 	Command("/bin/sh", "-c", "echo 99; exit 3").Run(&st, "")
 	st.Expect(t, true, true, `unexpected output
 command: /bin/sh -c echo 99; exit 3
+no input
 output:
 99
 no error output
@@ -92,6 +98,8 @@ func TestCmdOutput(t *testing.T) {
 	c.Run(&st, "eight\n")
 	st.Expect(t, true, true, `incorrect output
 command: /bin/sh -c read x; echo a $x b
+input:
+eight
 output:
 a eight b
 no error output
@@ -109,6 +117,8 @@ exit code: 0
 	c.Run(&st, "purple")
 	st.Expect(t, true, true, `incorrect output
 command: /bin/sh -c read x; echo a $x b
+input:
+purple
 output:
 a purple b
 no error output
@@ -120,6 +130,8 @@ exit code: 0
 	c.Run(&st, "whatever")
 	st.Expect(t, true, true, `unexpected output
 command: /bin/sh -c read x; echo a $x b
+input:
+whatever
 output:
 a whatever b
 no error output
@@ -139,6 +151,8 @@ func TestCmdError(t *testing.T) {
 	c.Run(&st, "chill")
 	st.Expect(t, true, true, `incorrect error output
 command: /bin/sh -c read x; if [ "$x" != nothing ]; then echo $x >&2; exit 99; fi
+input:
+chill
 no output
 error output:
 chill
@@ -156,6 +170,8 @@ exit code: 99
 	c.Run(&st, "apples grow in England")
 	st.Expect(t, true, true, `incorrect error output
 command: /bin/sh -c read x; if [ "$x" != nothing ]; then echo $x >&2; exit 99; fi
+input:
+apples grow in England
 no output
 error output:
 apples grow in England
@@ -167,6 +183,8 @@ exit code: 99
 	c.Run(&st, "something")
 	st.Expect(t, true, true, `unexpected error output
 command: /bin/sh -c read x; if [ "$x" != nothing ]; then echo $x >&2; exit 99; fi
+input:
+something
 no output
 error output:
 something
@@ -190,6 +208,8 @@ func TestCmdCode(t *testing.T) {
 	c.Run(&st, "31")
 	st.Expect(t, true, true, `incorrect exit code
 command: /bin/sh -c read x; exit $x
+input:
+31
 no output
 no error output
 exit code: 31
@@ -199,6 +219,8 @@ exit code: 31
 	c.Run(&st, "0")
 	st.Expect(t, true, true, `incorrect exit code
 command: /bin/sh -c read x; exit $x
+input:
+0
 no output
 no error output
 exit code: 0
@@ -226,6 +248,8 @@ exit code: 0
 	st.Expect(t, true, true, `99 is not prime
 incorrect exit code
 command: /bin/sh -c read x; exit $x
+input:
+99
 no output
 no error output
 exit code: 99
@@ -240,6 +264,8 @@ exit code: 99
 	c.Run(&st, "1")
 	st.Expect(t, true, true, `non-zero exit code
 command: /bin/sh -c read x; exit $x
+input:
+1
 no output
 no error output
 exit code: 1
@@ -255,6 +281,8 @@ exit code: 1
 	c2.Run(&st, "0")
 	st.Expect(t, true, true, `error output produced but exit code was 0
 command: /bin/sh -c echo oops >&2; read x; exit $x
+input:
+0
 no output
 error output:
 oops
@@ -266,6 +294,8 @@ exit code: 0
 	c2.Run(&st, "0")
 	st.Expect(t, true, true, `incorrect error output
 command: /bin/sh -c echo oops >&2; read x; exit $x
+input:
+0
 no output
 error output:
 oops
@@ -278,6 +308,8 @@ exit code: 0
 	st.Expect(t, true, true, `incorrect output
 incorrect error output
 command: /bin/sh -c echo oops >&2; read x; exit $x
+input:
+0
 no output
 error output:
 oops
@@ -289,6 +321,8 @@ exit code: 0
 	c2.Run(&st, "0")
 	st.Expect(t, true, true, `incorrect output
 command: /bin/sh -c echo oops >&2; read x; exit $x
+input:
+0
 no output
 error output:
 oops

@@ -111,22 +111,29 @@ func (sr *StubReporter) Fatalf(format string, args ...any) {
 // the when parameter.
 func (sr *StubReporter) Expect(t Reporter, failed, killed bool, log, when string) {
 	t.Helper()
+	ok := true
 	if sr.Failed() != failed {
+		ok = false
 		if !failed {
-			t.Fatal("StubReporter marked failed", when)
+			t.Error("StubReporter marked failed", when)
 		} else {
-			t.Fatal("StubReporter marked not failed", when)
+			t.Error("StubReporter marked not failed", when)
 		}
 	}
 	if sr.Killed() != killed {
+		ok = false
 		if !killed {
-			t.Fatal("StubReporter marked killed", when)
+			t.Error("StubReporter marked killed", when)
 		} else {
-			t.Fatal("StubReporter marked not killed", when)
+			t.Error("StubReporter marked not killed", when)
 		}
 	}
 	if actual := sr.Logged(); actual != log {
-		t.Fatalf("%s StubReporter log is '%s'; expected '%s'", when, actual, log)
+		ok = false
+		t.Errorf("%s StubReporter log is '%s'; expected '%s'", when, actual, log)
+	}
+	if !ok {
+		t.FailNow()
 	}
 }
 

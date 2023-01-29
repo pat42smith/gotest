@@ -15,28 +15,28 @@ import (
 func TestRequire(t *testing.T) {
 	var st StubReporter
 	Require(&st, true)
-	st.Expect(t, false, false, "", "after Require(true)")
+	st.Expect(t, false, false, "")
 
 	Require(&st, false)
-	st.Expect(t, true, true, "Test requirement failed\n", "after Require(false)")
+	st.Expect(t, true, true, "Test requirement failed\n")
 }
 
 func TestNilError(t *testing.T) {
 	var st StubReporter
 	NilError(&st, nil)
-	st.Expect(t, false, false, "", "after NilError(nil)")
+	st.Expect(t, false, false, "")
 
 	NilError(&st, fmt.Errorf("oops"))
-	st.Expect(t, true, true, "oops\n", "after NilError(oops)")
+	st.Expect(t, true, true, "oops\n")
 }
 
 func TestExpect(t *testing.T) {
 	var st StubReporter
 	Expect(&st, 5, 5)
-	st.Expect(t, false, false, "", "after Expect(5,5)")
+	st.Expect(t, false, false, "")
 
 	Expect(&st, "a", "b")
-	st.Expect(t, true, true, "Expected a but actual value was b\n", "after Expect(a,b)")
+	st.Expect(t, true, true, "Expected a but actual value was b\n")
 
 	// This should not compile, as the arguments have different types: Expect(&st, 7, "7")
 	testprogram := `package main_test
@@ -93,22 +93,22 @@ func TestMustPanic(t *testing.T) {
 	x := MustPanic(&st, func() {
 		panic("oops")
 	})
-	st.Expect(t, false, false, "", "MustPanic(panic)")
+	st.Expect(t, false, false, "")
 	Require(t, x == "oops")
 
 	x = MustPanic(&st, func() {})
-	st.Expect(t, true, true, "Expected panic did not occur\n", "MustPanic()")
+	st.Expect(t, true, true, "Expected panic did not occur\n")
 	Require(t, x == nil)
 }
 
 func TestErrorsNotFatal(t *testing.T) {
 	var st1, st2, st3 StubReporter
 	ErrorsNotFatal{&st1}.FailNow()
-	st1.Expect(t, true, false, "", "after ErrorsNotFatal.FailNow")
+	st1.Expect(t, true, false, "")
 
 	ErrorsNotFatal{&st2}.Fatal("problem")
-	st2.Expect(t, true, false, "problem\n", "after ErrorsNotFatal.Fatal")
+	st2.Expect(t, true, false, "problem\n")
 
 	ErrorsNotFatal{&st3}.Fatalf("<%s>", "uh oh")
-	st3.Expect(t, true, false, "<uh oh>\n", "after ErrorsNotFatal.Fatalf")
+	st3.Expect(t, true, false, "<uh oh>\n")
 }

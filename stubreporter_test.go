@@ -41,7 +41,7 @@ func TestStubSRExpect(t *testing.T) {
 		}
 
 		var srt StubReporter
-		sr.Expect(&srt, f, k, l, "in TestSRExpect")
+		sr.Expect(&srt, f, k, l)
 		if srt.failed != (bits>>3 != bits&7) {
 			t.Errorf("Wrong answer for bits %o", bits)
 		}
@@ -50,90 +50,90 @@ func TestStubSRExpect(t *testing.T) {
 
 func TestStubFail(t *testing.T) {
 	var sr StubReporter
-	sr.Expect(t, false, false, "", "before Fail")
+	sr.Expect(t, false, false, "")
 	sr.Fail()
-	sr.Expect(t, true, false, "", "after Fail")
+	sr.Expect(t, true, false, "")
 }
 
 func TestStubFailNow(t *testing.T) {
 	var sr StubReporter
-	sr.Expect(t, false, false, "", "before FailNow")
+	sr.Expect(t, false, false, "")
 	sr.FailNow()
-	sr.Expect(t, true, true, "", "after FailNow")
+	sr.Expect(t, true, true, "")
 }
 
 func TestStubLog(t *testing.T) {
 	var sr StubReporter
-	sr.Expect(t, false, false, "", "")
+	sr.Expect(t, false, false, "")
 	sr.Log("one")
-	sr.Expect(t, false, false, "one\n", "")
+	sr.Expect(t, false, false, "one\n")
 	sr.Log("two", "three\n")
-	sr.Expect(t, false, false, "one\ntwo three\n\n", "")
+	sr.Expect(t, false, false, "one\ntwo three\n\n")
 	sr.Log()
-	sr.Expect(t, false, false, "one\ntwo three\n\n\n", "")
+	sr.Expect(t, false, false, "one\ntwo three\n\n\n")
 }
 
 func TestStubLogf(t *testing.T) {
 	var sr StubReporter
-	sr.Expect(t, false, false, "", "")
+	sr.Expect(t, false, false, "")
 	sr.Logf("m%sy", "one")
-	sr.Expect(t, false, false, "money\n", "")
+	sr.Expect(t, false, false, "money\n")
 	sr.Logf("")
-	sr.Expect(t, false, false, "money\n\n", "")
+	sr.Expect(t, false, false, "money\n\n")
 	sr.Logf("%s\n", "two")
-	sr.Expect(t, false, false, "money\n\ntwo\n", "")
+	sr.Expect(t, false, false, "money\n\ntwo\n")
 }
 
 func TestStubError(t *testing.T) {
 	var sr StubReporter
 	sr.Error("boo")
-	sr.Expect(t, true, false, "boo\n", "")
+	sr.Expect(t, true, false, "boo\n")
 }
 
 func TestStubErrorf(t *testing.T) {
 	var sr StubReporter
 	sr.Errorf("boo")
-	sr.Expect(t, true, false, "boo\n", "")
+	sr.Expect(t, true, false, "boo\n")
 }
 
 func TestStubFatal(t *testing.T) {
 	var sr StubReporter
 	sr.Fatal("boo")
-	sr.Expect(t, true, true, "boo\n", "")
+	sr.Expect(t, true, true, "boo\n")
 }
 
 func TestStubFatalf(t *testing.T) {
 	var sr StubReporter
 	sr.Fatalf("boo")
-	sr.Expect(t, true, true, "boo\n", "")
+	sr.Expect(t, true, true, "boo\n")
 }
 
 func TestStubReset(t *testing.T) {
 	var sr StubReporter
-	sr.Expect(t, false, false, "", "")
+	sr.Expect(t, false, false, "")
 	sr.Fatal("boo")
-	sr.Expect(t, true, true, "boo\n", "")
+	sr.Expect(t, true, true, "boo\n")
 	sr.Reset()
-	sr.Expect(t, false, false, "", "")
+	sr.Expect(t, false, false, "")
 }
 
 func TestStubMessages(t *testing.T) {
 	var sr, x StubReporter
-	sr.Expect(&x, true, true, "oops\n", "")
-	x.Expect(t, true, true, `StubReporter marked not failed 
-StubReporter marked not killed 
- StubReporter log is ''; expected 'oops
+	sr.Expect(&x, true, true, "oops\n")
+	x.Expect(t, true, true, `StubReporter marked not failed
+StubReporter marked not killed
+StubReporter log is ''; expected 'oops
 '
-`, "")
+`)
 
 	sr.Reset()
 	x.Reset()
 	sr.Fatal("run!")
-	sr.Expect(&x, false, false, "walk\n", "")
-	x.Expect(t, true, true, `StubReporter marked failed 
-StubReporter marked killed 
- StubReporter log is 'run!
+	sr.Expect(&x, false, false, "walk\n")
+	x.Expect(t, true, true, `StubReporter marked failed
+StubReporter marked killed
+StubReporter log is 'run!
 '; expected 'walk
 '
-`, "")
+`)
 }

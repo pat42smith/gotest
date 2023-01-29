@@ -109,28 +109,28 @@ func (sr *StubReporter) Fatalf(format string, args ...any) {
 // The failed, killed, and log parameters are compared to the StubReporter status.
 // If they do not match, an error is reported to t; the message will include
 // the when parameter.
-func (sr *StubReporter) Expect(t Reporter, failed, killed bool, log, when string) {
+func (sr *StubReporter) Expect(t Reporter, failed, killed bool, log string) {
 	t.Helper()
 	ok := true
 	if sr.Failed() != failed {
 		ok = false
 		if !failed {
-			t.Error("StubReporter marked failed", when)
+			t.Error("StubReporter marked failed")
 		} else {
-			t.Error("StubReporter marked not failed", when)
+			t.Error("StubReporter marked not failed")
 		}
 	}
 	if sr.Killed() != killed {
 		ok = false
 		if !killed {
-			t.Error("StubReporter marked killed", when)
+			t.Error("StubReporter marked killed")
 		} else {
-			t.Error("StubReporter marked not killed", when)
+			t.Error("StubReporter marked not killed")
 		}
 	}
 	if actual := sr.Logged(); actual != log {
 		ok = false
-		t.Errorf("%s StubReporter log is '%s'; expected '%s'", when, actual, log)
+		t.Errorf("StubReporter log is '%s'; expected '%s'", actual, log)
 	}
 	if !ok {
 		t.FailNow()

@@ -16,7 +16,7 @@ import (
 func TestCmdDefaults(t *testing.T) {
 	var st StubReporter
 	Command("/bin/true").Run(&st, "")
-	st.Expect(t, false, false, "", "")
+	st.Expect(t, false, false, "")
 
 	st.Reset()
 	Command("/bin/false").Run(&st, "")
@@ -26,7 +26,7 @@ no input
 no output
 no error output
 exit code: 1
-`, "")
+`)
 
 	st.Reset()
 	Command("/bin/printf", "99").Run(&st, "")
@@ -37,7 +37,7 @@ output:
 99
 no error output
 exit code: 0
-`, "")
+`)
 
 	st.Reset()
 	Command("/bin/sh", "-c", "echo 87 >&2").Run(&st, "")
@@ -48,7 +48,7 @@ no output
 error output:
 87
 exit code: 0
-`, "")
+`)
 
 	st.Reset()
 	Command("/bin/sh", "-c", "echo 87 >&2; exit 3").Run(&st, "")
@@ -59,7 +59,7 @@ no output
 error output:
 87
 exit code: 3
-`, "")
+`)
 
 	st.Reset()
 	Command("/bin/sh", "-c", "echo 99; echo 87 >&2; exit 3").Run(&st, "")
@@ -72,7 +72,7 @@ output:
 error output:
 87
 exit code: 3
-`, "")
+`)
 
 	st.Reset()
 	Command("/bin/sh", "-c", "echo 99; exit 3").Run(&st, "")
@@ -83,7 +83,7 @@ output:
 99
 no error output
 exit code: 3
-`, "")
+`)
 }
 
 func TestCmdOutput(t *testing.T) {
@@ -92,7 +92,7 @@ func TestCmdOutput(t *testing.T) {
 	c.WantStdout("a seven b\n")
 
 	c.Run(&st, "seven\n")
-	st.Expect(t, false, false, "", "")
+	st.Expect(t, false, false, "")
 
 	st.Reset()
 	c.Run(&st, "eight\n")
@@ -104,14 +104,14 @@ output:
 a eight b
 no error output
 exit code: 0
-`, "")
+`)
 
 	st.Reset()
 	c.CheckStdout(func(actual string) bool {
 		return strings.Contains(actual, "green")
 	})
 	c.Run(&st, "evergreen")
-	st.Expect(t, false, false, "", "")
+	st.Expect(t, false, false, "")
 
 	st.Reset()
 	c.Run(&st, "purple")
@@ -123,7 +123,7 @@ output:
 a purple b
 no error output
 exit code: 0
-`, "")
+`)
 
 	st.Reset()
 	c.CheckStdout(nil)
@@ -136,7 +136,7 @@ output:
 a whatever b
 no error output
 exit code: 0
-`, "")
+`)
 }
 
 func TestCmdError(t *testing.T) {
@@ -145,7 +145,7 @@ func TestCmdError(t *testing.T) {
 	c.WantStderr("fever\n")
 
 	c.Run(&st, "fever")
-	st.Expect(t, false, false, "", "")
+	st.Expect(t, false, false, "")
 
 	st.Reset()
 	c.Run(&st, "chill")
@@ -157,14 +157,14 @@ no output
 error output:
 chill
 exit code: 99
-`, "")
+`)
 
 	st.Reset()
 	c.CheckStderr(func(actual string) bool {
 		return strings.Contains(actual, "tropical")
 	})
 	c.Run(&st, "blueberries are not a tropical fruit")
-	st.Expect(t, false, false, "", "")
+	st.Expect(t, false, false, "")
 
 	st.Reset()
 	c.Run(&st, "apples grow in England")
@@ -176,7 +176,7 @@ no output
 error output:
 apples grow in England
 exit code: 99
-`, "")
+`)
 
 	st.Reset()
 	c.CheckStderr(nil)
@@ -189,11 +189,11 @@ no output
 error output:
 something
 exit code: 99
-`, "")
+`)
 
 	st.Reset()
 	c.Run(&st, "nothing")
-	st.Expect(t, false, false, "", "")
+	st.Expect(t, false, false, "")
 }
 
 func TestCmdCode(t *testing.T) {
@@ -202,7 +202,7 @@ func TestCmdCode(t *testing.T) {
 	c.WantCode(17)
 
 	c.Run(&st, "17")
-	st.Expect(t, false, false, "", "")
+	st.Expect(t, false, false, "")
 
 	st.Reset()
 	c.Run(&st, "31")
@@ -213,7 +213,7 @@ input:
 no output
 no error output
 exit code: 31
-`, "")
+`)
 
 	st.Reset()
 	c.Run(&st, "0")
@@ -224,7 +224,7 @@ input:
 no output
 no error output
 exit code: 0
-`, "")
+`)
 
 	st.Reset()
 	c.CheckCode(func(actual int) bool {
@@ -237,11 +237,11 @@ exit code: 0
 		return false
 	})
 	c.Run(&st, "17")
-	st.Expect(t, false, false, "", "")
+	st.Expect(t, false, false, "")
 
 	st.Reset()
 	c.Run(&st, "31")
-	st.Expect(t, false, false, "", "")
+	st.Expect(t, false, false, "")
 
 	st.Reset()
 	c.Run(&st, "99")
@@ -253,12 +253,12 @@ input:
 no output
 no error output
 exit code: 99
-`, "")
+`)
 
 	st.Reset()
 	c.CheckCode(nil)
 	c.Run(&st, "0")
-	st.Expect(t, false, false, "", "")
+	st.Expect(t, false, false, "")
 
 	st.Reset()
 	c.Run(&st, "1")
@@ -269,13 +269,13 @@ input:
 no output
 no error output
 exit code: 1
-`, "")
+`)
 
 	st.Reset()
 	c2 := Command("/bin/sh", "-c", "echo oops >&2; read x; exit $x")
 	c2.WantStderr("oops\n")
 	c2.Run(&st, "3")
-	st.Expect(t, false, false, "", "")
+	st.Expect(t, false, false, "")
 
 	st.Reset()
 	c2.Run(&st, "0")
@@ -287,7 +287,7 @@ no output
 error output:
 oops
 exit code: 0
-`, "")
+`)
 
 	st.Reset()
 	c2.WantStderr("hunky dory\n")
@@ -300,7 +300,7 @@ no output
 error output:
 oops
 exit code: 0
-`, "")
+`)
 
 	st.Reset()
 	c2.WantStdout("erewhon\n")
@@ -314,7 +314,7 @@ no output
 error output:
 oops
 exit code: 0
-`, "")
+`)
 
 	st.Reset()
 	c2.WantStderr("oops\n")
@@ -327,7 +327,7 @@ no output
 error output:
 oops
 exit code: 0
-`, "")
+`)
 }
 
 func TestCmdPanic(t *testing.T) {

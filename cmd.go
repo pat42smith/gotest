@@ -92,6 +92,8 @@ func (c *Cmd) WantCode(expected int) {
 }
 
 // Chdir sets the working directory where the command will be run.
+// Chdir(""), the default, is equivalent to Chdir("."); it uses
+// the current directory.
 func (c *Cmd) Chdir(path string) {
 	c.dir = path
 }
@@ -197,7 +199,7 @@ func (c *Cmd) Run(t Reporter, input string) {
 		if out.Len() == 0 {
 			t.Error("no output")
 		} else {
-			// Don't use t.Error("output\n" + out.String()); the output usually ends with a newline,
+			// Don't use t.Error("output:\n" + out.String()); the output usually ends with a newline,
 			// and t.Error always adds another newline.
 			t.Errorf("output:\n%s", out.String())
 		}

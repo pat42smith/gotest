@@ -11,10 +11,16 @@ import (
 func TestStubHelper(t *testing.T) {
 	var sr StubReporter
 	sr.Helper()
-	// If it returned, we're fine.
+	sr.Expect(t, false, false, "")
+
+	sr.failed = true
+	sr.killed = true
+	fmt.Fprintln(&sr.log, "boo")
+	sr.Helper()
+	sr.Expect(t, true, true, "boo\n")
 }
 
-func TestStubSRExpect(t *testing.T) {
+func TestStubExpect(t *testing.T) {
 	for bits := 0; bits < 0100; bits++ {
 		var sr StubReporter
 		if bits&1 != 0 {
@@ -113,6 +119,8 @@ func TestStubReset(t *testing.T) {
 	sr.Expect(t, false, false, "")
 	sr.Fatal("boo")
 	sr.Expect(t, true, true, "boo\n")
+	sr.Reset()
+	sr.Expect(t, false, false, "")
 	sr.Reset()
 	sr.Expect(t, false, false, "")
 }

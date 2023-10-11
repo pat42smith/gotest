@@ -127,13 +127,13 @@ exit code: 0
 
 	st.Reset()
 	c.CheckStdout(nil)
-	c.Run(&st, "whatever")
+	c.Run(&st, "greenery")
 	st.Expect(t, true, true, `unexpected output
 command: /bin/sh -c read x; echo a $x b
 input:
-whatever
+greenery
 output:
-a whatever b
+a greenery b
 no error output
 exit code: 0
 `)
@@ -180,14 +180,14 @@ exit code: 99
 
 	st.Reset()
 	c.CheckStderr(nil)
-	c.Run(&st, "something")
+	c.Run(&st, "tropical")
 	st.Expect(t, true, true, `unexpected error output
 command: /bin/sh -c read x; if [ "$x" != nothing ]; then echo $x >&2; exit 99; fi
 input:
-something
+tropical
 no output
 error output:
-something
+tropical
 exit code: 99
 `)
 
@@ -349,8 +349,12 @@ func TestCmdChdir(t *testing.T) {
 
 	path := filepath.Join(tmp, "somefile")
 	f, e := os.Create(path)
-	NilError(t, e)
-	NilError(t, f.Close())
+	if e == nil {
+		e = f.Close()
+	}
+	if e != nil {
+		t.Fatal(e)
+	}
 
 	c := Command("/bin/ls")
 	c.Chdir(tmp)

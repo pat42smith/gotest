@@ -4,10 +4,9 @@
 package gotest
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -18,16 +17,7 @@ func TestRequire(t *testing.T) {
 	st.Expect(t, false, false, "")
 
 	Require(&st, false)
-	st.Expect(t, true, true, "Test requirement failed\n")
-}
-
-func TestNilError(t *testing.T) {
-	var st StubReporter
-	NilError(&st, nil)
-	st.Expect(t, false, false, "")
-
-	NilError(&st, fmt.Errorf("oops"))
-	st.Expect(t, true, true, "oops\n")
+	st.Expect(t, true, true, "Required condition failed\n")
 }
 
 func TestExpect(t *testing.T) {
@@ -39,36 +29,28 @@ func TestExpect(t *testing.T) {
 	st.Expect(t, true, true, "Expected a but actual value was b\n")
 
 	// This should not compile, as the arguments have different types: Expect(&st, 7, "7")
-	testprogram := `package main_test
+	testprogram := `package foo
 import "github.com/pat42smith/gotest"
 import "testing"
 
-func TestExpect(t *testing.T) {
+func Try(t *testing.T) {
 	gotest.Expect(t, 7, "7")
 }`
 
-	here, e := os.Getwd()
-	NilError(t, e)
-	here = strconv.Quote(here)
-	gomod := `module main
-go 1.18
-require github.com/pat42smith/gotest v0.0.0
-replace github.com/pat42smith/gotest => ` + here + "\n"
-
 	tmp := t.TempDir()
-	testfile := filepath.Join(tmp, "main_test.go")
-	NilError(t, os.WriteFile(testfile, []byte(testprogram), 0444))
-	modfile := filepath.Join(tmp, "go.mod")
-	NilError(t, os.WriteFile(modfile, []byte(gomod), 0444))
+	testfile := filepath.Join(tmp, "foo.go")
+	if e := os.WriteFile(testfile, []byte(testprogram), 0444); e != nil {
+		t.Fatal(e)
+	}
 
-	cmd := Command("go", "test")
-	cmd.Chdir(tmp)
+	cmd := Command("go", "build", testfile)
 	cmd.CheckStderr(func(actual string) bool {
-		return strings.Contains(actual, `default type string of "7" does not match inferred type int for T`)
+		return strings.Contains(actual, `mismatched types untyped int and untyped string (cannot infer T)`)
 	})
+	cmd.Run(t, "")
 }
 
-func Testpanics(t *testing.T) {
+func TestPanics(t *testing.T) {
 	p, w := panics(func() {})
 	Expect(t, false, p)
 	Require(t, w == nil) // Can't use Expect(t, nil, w) because w (type any) does not implement comparable.
@@ -79,13 +61,15 @@ func Testpanics(t *testing.T) {
 	Expect(t, true, p)
 	Require(t, w == 97)
 
-	// panic(nil) is a special case that appears to the recover function as if no panic happened.
-	// So be sure to check this case.
+	// panic(nil) is a special case that, in older versions of Go, appeared to the recover
+	// function as if no panic happened.  Since Go 1.21, it causes a runtime panic.
 	p, w = panics(func() {
 		panic(nil)
 	})
 	Expect(t, true, p)
-	Require(t, w == nil)
+	if _, ok := w.(*runtime.PanicNilError); !ok {
+		t.Fatalf("result of panics after panic(nil) is a %T; expected *runtime.PanicNilError", w)
+	}
 }
 
 func TestMustPanic(t *testing.T) {
@@ -101,14 +85,14 @@ func TestMustPanic(t *testing.T) {
 	Require(t, x == nil)
 }
 
-func TestErrorsNotFatal(t *testing.T) {
+func TestNotFatal(t *testing.T) {
 	var st1, st2, st3 StubReporter
-	ErrorsNotFatal{&st1}.FailNow()
+	NotFatal{&st1}.FailNow()
 	st1.Expect(t, true, false, "")
 
-	ErrorsNotFatal{&st2}.Fatal("problem")
+	NotFatal{&st2}.Fatal("problem")
 	st2.Expect(t, true, false, "problem\n")
 
-	ErrorsNotFatal{&st3}.Fatalf("<%s>", "uh oh")
+	NotFatal{&st3}.Fatalf("<%s>", "uh oh")
 	st3.Expect(t, true, false, "<uh oh>\n")
 }

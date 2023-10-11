@@ -107,14 +107,13 @@ func (sr *StubReporter) Fatalf(format string, args ...any) {
 // Expect verifies the status of the StubReporter.
 //
 // The failed, killed, and log parameters are compared to the StubReporter status.
-// If they do not match, an error is reported to t; the message will include
-// the when parameter.
+// If they do not match, an error is reported to t.
 func (sr *StubReporter) Expect(t Reporter, failed, killed bool, log string) {
 	t.Helper()
 	ok := true
 	if sr.Failed() != failed {
 		ok = false
-		if !failed {
+		if sr.Failed() {
 			t.Error("StubReporter marked failed")
 		} else {
 			t.Error("StubReporter marked not failed")
@@ -122,7 +121,7 @@ func (sr *StubReporter) Expect(t Reporter, failed, killed bool, log string) {
 	}
 	if sr.Killed() != killed {
 		ok = false
-		if !killed {
+		if sr.Killed() {
 			t.Error("StubReporter marked killed")
 		} else {
 			t.Error("StubReporter marked not killed")

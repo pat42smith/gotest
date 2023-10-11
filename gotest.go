@@ -1,4 +1,4 @@
-// Copyright 2022 Patrick Smith
+// Copyright 2022-2023 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 // Package gotest provides support for writing test cases in Go.
@@ -10,7 +10,7 @@
 //
 // By default, these functions use FailNow, Fatal, or Fatalf to report errors,
 // so they terminate the running test on the first error. This behavior may
-// be changed with the ErrorsNotFatal wrapper.
+// be changed with the NotFatal wrapper.
 package gotest
 
 // Type Reporter is an interface satisfied by the testing.T, .B, and .F types.
@@ -20,7 +20,8 @@ package gotest
 // can properly mark themselves as helper functions.
 //
 // In future, more methods from the intersection of T, B, and F may be added.
-// Be warned that code using Reporter in unusual ways may break if this happens.
+// Be warned that this may break code containing types designed to implement Reporter;
+// you create such types at your own risk.
 type Reporter interface {
 	Error(args ...any)
 	Errorf(format string, args ...any)
@@ -38,7 +39,7 @@ type Reporter interface {
 func Require(t Reporter, condition bool) {
 	t.Helper()
 	if !condition {
-		t.Fatal("Test requirement failed")
+		t.Fatal("Required condition failed")
 	}
 }
 
@@ -50,19 +51,12 @@ func Expect[T comparable](t Reporter, expected, actual T) {
 	}
 }
 
-// NilError fails and terminates the test if passed a non-nil error.
-func NilError(t Reporter, e error) {
-	t.Helper()
-	if e != nil {
-		t.Fatal(e)
-	}
-}
-
 // Function panics runs f and reports whether it panics.
 //
 // If f panics, panics returns true and the value passed to panic.
 // Otherwise, panics returns (false, nil).
-// If f calls panic(nil), panics will correctly return (true, nil).
+// If f calls panic(nil), panics will return (true, nil) in Go 1.20 and
+// earlier. It will return true and a non-nil value in 1.21 and later.
 func panics(f func()) (panicked bool, with any) {
 	defer func() {
 		if panicked {
@@ -78,6 +72,8 @@ func panics(f func()) (panicked bool, with any) {
 //
 // If f does not panic, MustPanic terminates the running test with an error.
 // If f does panic, MustPanic returns the value that was passed to panic.
+// However, if f calls panic(nil), MustPanic will return a non-nil value
+// in Go 1.21 and later versions.
 func MustPanic(t Reporter, f func()) any {
 	t.Helper()
 	panicked, with := panics(f)
@@ -87,22 +83,25 @@ func MustPanic(t Reporter, f func()) any {
 	return with
 }
 
-// ErrorsNotFatal wraps a Reporter, and redirects fatal errors to non-terminating errors.
-type ErrorsNotFatal struct {
+// NotFatal wraps a Reporter, and redirects fatal errors to non-terminating errors.
+type NotFatal struct {
 	Reporter
 }
 
-// ErrorsNotFatal.FailNow marks a test failed, but does not not terminate it.
-func (enf ErrorsNotFatal) FailNow() {
-	enf.Fail()
+// NotFatal.FailNow marks a test failed, but does not not terminate the test;
+// it is equivalent to nf.Fail().
+func (nf NotFatal) FailNow() {
+	nf.Fail()
 }
 
-// ErrorsNotFatal.Fatal reports an error without terminating the test.
-func (enf ErrorsNotFatal) Fatal(args ...any) {
-	enf.Error(args...)
+// NotFatal.Fatal reports an error without terminating the test;
+// it is equivalent to nf.Error(args...).
+func (nf NotFatal) Fatal(args ...any) {
+	nf.Error(args...)
 }
 
-// ErrorsNotFatal.Fatal reports an error without terminating the test.
-func (enf ErrorsNotFatal) Fatalf(format string, args ...any) {
-	enf.Errorf(format, args...)
+// NotFatal.Fatal reports an error without terminating the test;
+// it is equivalent to nf.Errorf(format, args...).
+func (nf NotFatal) Fatalf(format string, args ...any) {
+	nf.Errorf(format, args...)
 }
